@@ -1,4 +1,7 @@
 require_relative './player'
+require_relative './board'
+require_relative '../views/show'
+
 #require 'pry'
 
 class Game
@@ -16,26 +19,56 @@ class Game
         symbol = "O"
       end
       @players << get_new_player(symbol, index)
+      puts "\nLe joueur \"#{@players[index].name}\" a pour symbole : #{symbol}.\n"
     end
     @current_player = @players[0]
+    #puts "initialize @current_player : #{@current_player}"
   end
   
-  def turn
-    #TO DO : méthode faisant appelle aux méthodes des autres classes (notamment à l'instance de Board). Elle affiche le plateau, demande au joueur ce qu'il joue, vérifie si un joueur a gagné, passe au joueur suivant si la partie n'est pas finie.
+  def turn(board)
+    Show.new.show_board(board) # affiche le plateau
+    board.play_turn(@current_player) # demande au joueur ce qu'il joue
+    if !(board.victory?).nil? # vérifie si un joueur a gagné
+      game_end(board.victory?, board)
+    else # passe au joueur suivant si la partie n'est pas finie
+      @current_player = @players[(@players.find_index(@current_player) + 1) % 2]
+      self.turn(board)
+    end
   end
 
   def new_round
     # TO DO : relance une partie en initialisant un nouveau board mais en gardant les mêmes joueurs.
+    @status = "on going"
+    board = Board.new
+    self.turn(board)
   end
 
-  def game_end
-    # TO DO : permet l'affichage de fin de partie quand un vainqueur est détecté ou si il y a match nul
-  end    
-  
+  def game_end(string_of_victory, board)
+    # affichage de fin de partie quand un vainqueur est détecté ou si il y a match nul
+    if !string_of_victory.nil?
+      if string_of_victory == "draw"
+        @status = string_of_victory
+        result = "il y a match nul."
+        puts "\nLa partie s'est terminée en #{board.count_turn} coups et #{result}"
+        puts "\nLa partie est relancée avec les mêmes joueurs."
+        self.new_round
+      else
+        if string_of_victory == "0"
+          @status = @players[0].name
+        else # string_of_victory == "1"
+          @status = @players[1].name
+        end
+        result = "le vainqueur est le joueur \"#{@status}\"."
+        puts "\nLa partie s'est terminée en #{board.count_turn} coups et #{result}"
+        exit
+      end
+    end
+  end
+
   private
 
   def get_new_player(symbol, index)
-    print "Quel est le prénom du #{index == 0 ? "premier" : "second"} joueur ?\n> "
+    print "\nQuel est le prénom du #{index == 0 ? "premier" : "second"} joueur ?\n> "
     first_name = gets.chomp
     player = Player.new(first_name, symbol)
     return player

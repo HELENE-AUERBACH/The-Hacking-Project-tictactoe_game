@@ -1,10 +1,13 @@
 require_relative '../app/game'
+#require 'pry'
 
 class Application
   def perform
-    # TO DO : méthode qui initialise le jeu puis contient des boucles while pour faire tourner le jeu tant que la partie n'est pas terminée.
-    #
-
+    # méthode qui initialise le jeu puis fait tourner le jeu tant que la partie n'est pas terminée.
+    game = Game.new
+    board = Board.new
+    game.turn(board)
   end
-
 end
+
+#binding.pry

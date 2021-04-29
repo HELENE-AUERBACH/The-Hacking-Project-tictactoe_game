@@ -1,11 +1,11 @@
 require_relative '../app/board'
-require 'pry'
 
 class Show
 
   def show_board(board)
-    puts "Voici l'état actuel du plateau :"
+    puts "\nVoici l'état actuel du plateau :"
     show_rows(board)
+    puts
   end
   
   private
@@ -32,7 +32,6 @@ class Show
       print "3 |"
     end
     print "| #{board.cells[case_index].value} |"
-    #print "| #{board.cells[case_index].position} |"
   end
 
   def show_columns_header
@@ -40,5 +39,3 @@ class Show
     puts "\n     A    B    C"
   end
 end
-
-binding.pry
