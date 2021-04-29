@@ -53,13 +53,15 @@ class Board
         spaces_total += 1
       end
     end
-    if spaces_total == 0 && (x_total > 0 || o_total > 0)
-      if (x_total == o_total)
+    if spaces_total < 9 && (x_total >= 3 || o_total >= 3)
+      if !victory_in_row.nil?
+        result = victory_in_row
+      elsif !victory_in_column.nil?
+        result = victory_in_column
+      elsif !victory_in_diagonal.nil?
+        result = victory_in_diagonal
+      elsif spaces_total == 0
         result = "draw"
-      elsif x_total > o_total 
-        result = "0"
-      else
-        result = "1"
       end
     end
     return result
@@ -68,17 +70,24 @@ class Board
   private
 
   def get_board_case_index(current_player)
-    print "\nJoueur \"#{current_player.name}\", sur quelle case souhaites-tu poser ton pion ?\n> "
-    answer = gets.chomp
-    while !check_answer?(answer)
-      puts "Veuillez saisir un identifiant de case avec la lettre majuscule de la colonne suivie du numéro de ligne (par exemple : A1)."
-      print "> "
-      answer = gets.chomp 
+    case_index = -1
+    while case_index == -1 || @cells[case_index].value != " "
+      if case_index != -1 && @cells[case_index].value != " "
+        puts "Malheureusement, cette case est déjà occupée par un pion \"#{@cells[case_index].value}\"."
+      end
+      print "\nJoueur \"#{current_player.name}\", sur quelle case souhaites-tu poser ton pion ?\n> "
+      answer = gets.chomp
+      while !check_answer?(answer)
+        puts "Veuillez saisir un identifiant de case avec la lettre majuscule de la colonne (A, B ou C) suivie du numéro de ligne (1, 2 ou 3) (par exemple : A1)."
+        print "> "
+        answer = gets.chomp 
+      end
+      letter = answer[0]
+      row = answer[1]
+      case_index = transform_row(row) + transform_letter(letter)
     end
-    letter = answer[0]
-    row = answer[1]
     puts "Tu as bien placé ton pion \"#{current_player.symbol}\" sur la case \"#{answer.strip}\".\n"
-    return transform_row(row) + transform_letter(letter)
+    return case_index
   end
 
   def transform_letter(letter)
@@ -97,6 +106,102 @@ class Board
       row = answer[1]
       if (('A'..'C').cover? letter) && (('1'..'3').cover? row) 
         result = true
+      end
+    end
+    return result
+  end
+
+  def victory_in_row
+    result = nil
+    row_number = 0
+    3.times do
+      value = @cells[0 + row_number].value
+      if value != " " # la ligne ne peut pas être gagnante sinon
+        total = 1
+        2.times do |case_index|
+          if @cells[case_index + 1 + row_number].value == value
+            total += 1
+          else
+            break # la ligne ne peut pas être gagnante 
+          end
+        end
+        if total == 3
+          if value == "X"
+            result = "0"
+          else
+            result = "1"
+          end
+          break # on a une ligne de 3 pions de même valeur gagnante
+        end
+      end
+      row_number += 3
+    end
+    return result
+  end
+
+  def victory_in_column
+    result = nil
+    3.times do |column_number|
+      value = @cells[column_number].value
+      if value != " " # la colonne ne peut pas être gagnante sinon
+        total = 1
+        case_index = 3 + column_number
+        2.times do
+          if @cells[case_index].value == value
+            total += 1
+          else
+            break # la colonne ne peut pas être gagnante 
+          end
+          case_index += 3
+        end
+        if total == 3
+          if value == "X"
+            result = "0"
+          else
+            result = "1"
+          end
+          break # on a une colonne de 3 pions de même valeur gagnante
+        end
+      end
+    end
+    return result
+  end
+
+  def victory_in_diagonal
+    result = nil
+    case_index = 0
+    value = @cells[case_index].value
+    if value != " " # la diagonale ne peut pas être gagnante sinon
+      total = 1
+      2.times do
+        case_index += 4
+        if @cells[case_index].value == value
+          total += 1
+        else
+          break # la diagonale ne peut pas être gagnante 
+        end
+      end
+    end
+    if total != 3
+      case_index = 2
+      value = @cells[case_index].value
+      if value != " " # la diagonale ne peut pas être gagnante sinon
+        total = 1
+        2.times do
+          case_index += 2
+          if @cells[case_index].value == value
+            total += 1
+          else
+            break # la diagonale ne peut pas être gagnante 
+          end
+        end
+      end
+    end
+    if total == 3 # on a une diagonale de 3 pions de même valeur gagnante
+      if value == "X"
+        result = "0"
+      else
+        result = "1"
       end
     end
     return result

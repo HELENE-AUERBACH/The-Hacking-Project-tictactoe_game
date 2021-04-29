@@ -22,7 +22,6 @@ class Game
       puts "\nLe joueur \"#{@players[index].name}\" a pour symbole : #{symbol}.\n"
     end
     @current_player = @players[0]
-    #puts "initialize @current_player : #{@current_player}"
   end
   
   def turn(board)
@@ -37,21 +36,20 @@ class Game
   end
 
   def new_round
-    # TO DO : relance une partie en initialisant un nouveau board mais en gardant les mêmes joueurs.
+    # relance une partie en initialisant un nouveau board mais en gardant les mêmes joueurs.
     @status = "on going"
     board = Board.new
     self.turn(board)
   end
 
   def game_end(string_of_victory, board)
-    # affichage de fin de partie quand un vainqueur est détecté ou si il y a match nul
+    # affichage de fin de partie quand un vainqueur est détecté ou s'il y a match nul
     if !string_of_victory.nil?
+      Show.new.show_board(board) # affiche le plateau
       if string_of_victory == "draw"
         @status = string_of_victory
         result = "il y a match nul."
         puts "\nLa partie s'est terminée en #{board.count_turn} coups et #{result}"
-        puts "\nLa partie est relancée avec les mêmes joueurs."
-        self.new_round
       else
         if string_of_victory == "0"
           @status = @players[0].name
@@ -60,6 +58,13 @@ class Game
         end
         result = "le vainqueur est le joueur \"#{@status}\"."
         puts "\nLa partie s'est terminée en #{board.count_turn} coups et #{result}"
+      end
+      print "\nDésirez-vous rejouer une nouvelle partie ? (N pour quitter le jeu)\n> "
+      answer = gets.chomp
+      if !answer.nil? && answer.instance_of?(String) && !answer.strip.empty? && !(answer.strip)[0].upcase.include?("N")
+        puts "\nLa partie est relancée avec les mêmes joueurs."
+        self.new_round
+      else
         exit
       end
     end
